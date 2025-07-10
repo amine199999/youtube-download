@@ -73,6 +73,29 @@
       background-color: #00a344;
     }
 
+    .progress-container {
+      width: 100%;
+      background-color: #444;
+      border-radius: 8px;
+      overflow: hidden;
+      height: 20px;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background-color: #00c853;
+      animation: progressAnim 2s linear infinite;
+    }
+
+    @keyframes progressAnim {
+      0% { width: 0%; }
+      50% { width: 90%; }
+      100% { width: 0%; }
+    }
+
     @media (max-width: 600px) {
       h1 {
         font-size: 22px;
@@ -86,32 +109,53 @@
     <input type="text" id="url" placeholder="Collez votre lien YouTube ici...">
     <button onclick="telecharger()">Télécharger</button>
     <div id="status"></div>
+
+    <!-- Barre de progression -->
+    <div class="progress-container">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+
     <div class="lien" id="lien"></div>
   </div>
 
   <script>
     async function telecharger() {
       const url = document.getElementById('url').value;
-      document.getElementById('status').innerText = "⏳ Téléchargement en cours...";
-      document.getElementById('lien').innerHTML = "";
+      const status = document.getElementById('status');
+      const lien = document.getElementById('lien');
+      const progress = document.getElementById('progress-bar');
+      const container = document.querySelector('.progress-container');
 
-      const response = await fetch('http:// 192.168.43.63:5000/telecharger', 
- {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: url })
-      });
+      status.innerText = "⏳ Téléchargement en cours...";
+      lien.innerHTML = "";
+      container.style.display = "block";
 
-      const data = await response.json();
+      try {
+        const response = await fetch('http://192.168.43.63:5000/telecharger', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: url })
+        });
 
-      if (response.ok && data.lien) {
-        document.getElementById('status').innerText = "✅ Vidéo prête à être téléchargée !";
-        document.getElementById('lien').innerHTML =
-          `<a href="http://localhost:5000${data.lien}" download target="_blank">📥 Télécharger la vidéo</a>`;
-      } else {
-        document.getElementById('status').innerText = "❌ Erreur : " + (data.error || "Inconnue");
+        const data = await response.json();
+        container.style.display = "none";
+
+        if (response.ok && data.lien) {
+          status.innerText = "✅ Vidéo prête à être téléchargée !";
+          lien.innerHTML =
+            `<a href="http://192.168.43.63:5000${data.lien}" download target="_blank">📥 Télécharger la vidéo</a>`;
+        } else {
+          status.innerText = "❌ Erreur : " + (data.error || "Inconnue");
+        }
+      } catch (e) {
+        container.style.display = "none";
+        status.innerText = "❌ Erreur réseau.";
       }
     }
+    
+ 
+
+
   </script>
 </body>
 </html>
