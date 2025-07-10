@@ -10,6 +10,12 @@ CORS(app)
 DOSSIER_VIDEOS = "videos"
 os.makedirs(DOSSIER_VIDEOS, exist_ok=True)
 
+
+@app.route("/")
+def index():
+    return send_from_directory(".", "index.html")
+
+
 @app.route('/telecharger', methods=['POST'])
 def telecharger():
     data = request.get_json()
